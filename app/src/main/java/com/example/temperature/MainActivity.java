@@ -113,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
                 showToast("Failed to fetch temperature. Check your internet connection.");
             }
 
-
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful()) {
                     String responseData = response.body().string();
@@ -123,8 +122,20 @@ public class MainActivity extends AppCompatActivity {
                         double temperature = main.getDouble("temp");
                         updateTemperatureDisplay(temperature);
                     } catch (JSONException e) {
+
                         e.printStackTrace();
                         showToast("Failed to parse temperature data.");
+                    }
+                }
+                else {
+                    String responseData = response.body().string();
+                    try {
+                        JSONObject jsonObject = new JSONObject(responseData);
+                        String errOutput = jsonObject.getString("message");
+
+                        showToast(errOutput);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 }
             }
