@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -33,6 +34,9 @@ import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+
+
+
 
 public class MainActivity extends AppCompatActivity {
     // UI components
@@ -65,6 +69,9 @@ public class MainActivity extends AppCompatActivity {
         // Initialize LocationManager and Handler
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         handler = new Handler(Looper.getMainLooper());
+
+        // Request location permission
+        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_CODE);
 
         // Set click listeners for buttons
         refreshButton.setOnClickListener(new View.OnClickListener() {
@@ -164,8 +171,32 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+
+
         // If permission is already granted, proceed to get location
-        setupLocationListener();
+        checkLocationProvider();
+    }
+    private void checkLocationProvider() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (locationManager != null) {
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                showToast("Location services are disabled. Please enable location services.");
+            } else {
+                setupLocationListener();
+                @SuppressLint("MissingPermission") Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                if (lastKnownLocation != null) {
+                    double latitude = lastKnownLocation.getLatitude();
+                    double longitude = lastKnownLocation.getLongitude();
+                    latitudeInput.setText(String.valueOf(lastKnownLocation.getLatitude()));
+                    longitudeInput.setText(String.valueOf(lastKnownLocation.getLongitude()));
+                    Log.d("Location", "Latitude: " + latitude + ", Longitude: " + longitude);
+                    // Use latitude and longitude here as needed
+                } else {
+                    // Last known location is not available
+                    Toast.makeText(this, "Last known location is not available", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
     }
 
     // After user responds to permission request, this method will be called
@@ -190,11 +221,10 @@ public class MainActivity extends AppCompatActivity {
             showToast("Cannot get location without location permissions, please turn them on!");
             return;
         }
+
         LocationListener locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                latitudeInput.setText(String.valueOf(location.getLatitude()));
-                longitudeInput.setText(String.valueOf(location.getLongitude()));
             }
 
             @Override
@@ -209,7 +239,10 @@ public class MainActivity extends AppCompatActivity {
             public void onProviderDisabled(@NonNull String provider) {
             }
         };
-        locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListener, null);
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (locationManager != null) {
+            locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListener, null);
+        }
     }
 
     // Display message in pop-up
