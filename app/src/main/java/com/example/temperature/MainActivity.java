@@ -43,8 +43,6 @@ public class MainActivity extends AppCompatActivity {
     private EditText latitudeInput, longitudeInput;
     private TextView temperatureDisplay;
 
-    private LocationManager locationManager;
-
 
     private static final int PERMISSION_REQUEST_CODE = 1001; // You can use any value for the request code
 
@@ -67,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
         Switch autoRefreshSwitch = findViewById(R.id.autoRefreshSwitch);
 
         // Initialize LocationManager and Handler
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         handler = new Handler(Looper.getMainLooper());
 
         // Request location permission
@@ -121,8 +118,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                String responseData = response.body() != null ? response.body().string() : "";
                 if (response.isSuccessful()) {
-                    String responseData = response.body().string();
                     try {
                         JSONObject jsonObject = new JSONObject(responseData);
                         JSONObject main = jsonObject.getJSONObject("main");
@@ -135,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 else {
-                    String responseData = response.body().string();
                     try {
                         JSONObject jsonObject = new JSONObject(responseData);
                         String errOutput = jsonObject.getString("message");
@@ -224,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
 
         LocationListener locationListener = new LocationListener() {
             @Override
-            public void onLocationChanged(Location location) {
+            public void onLocationChanged(@NonNull Location location) {
             }
 
             @Override

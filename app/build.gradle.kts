@@ -48,7 +48,6 @@ android {
 }
 
 dependencies {
-    implementation("com.google.android.gms:play-services-location:18.0.0")
     implementation("androidx.annotation:annotation:1.3.0")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("androidx.appcompat:appcompat:1.6.1")
